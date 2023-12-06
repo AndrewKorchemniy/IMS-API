@@ -31,12 +31,20 @@ namespace InventoryFunction
             ILogger log,
             string companyName)
         {
-            log.LogInformation("C# AddInventory function processed a request.");
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            dynamic data = JsonConvert.DeserializeObject(requestBody);
+
+            if (data == null || data.inventoryName == null)
+            {
+                return new BadRequestObjectResult("Please provide 'inventoryName' in the request body.");
+            }
+
+            log.LogInformation($"Name: {data.inventoryName}");
 
             Inventory newInventory = new()
             {
-                id = Guid.NewGuid().ToString(),
-                name = req.Query["inventoryName"],
+                id = data!.inventoryName,
+                name = data!.inventoryName,
                 companyName = companyName
             };
 
