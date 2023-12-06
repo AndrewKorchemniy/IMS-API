@@ -31,18 +31,11 @@ namespace InventoryFunction
             ILogger log,
             string companyName)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            log.LogInformation("C# GetInventories function processed a request.");
 
             var inventories = await _inventoryService.GetInventoriesAsync(companyName, client, log);
 
-            string responseMessage = $"Received request for company: {companyName}";
-            
-            // iterate over inventories and log them out
-            foreach (Inventory inventory in inventories)
-            {
-                log.LogInformation($"Inventory Name: {inventory.name}\nCompany Name: {inventory.companyName}\n");
-            }
-            return new OkObjectResult(responseMessage);
+            return new OkObjectResult(inventories);
         }
     }
 }

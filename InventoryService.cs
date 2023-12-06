@@ -20,6 +20,22 @@ namespace InventoryFunction
             _logger = logger;
         }
 
+        public async Task<bool> AddInventoryAsync(Inventory inventory, CosmosClient client, ILogger log)
+        {
+            Container container = client.GetDatabase("IMS").GetContainer("Inventories");
+            log.LogInformation($"Add inventory {inventory.name} in {inventory.companyName}");
+            var result = await container.CreateItemAsync(inventory);
+
+            if (result.StatusCode == System.Net.HttpStatusCode.Created)
+            {
+                log.LogInformation($"Added inventory {inventory.name} in {inventory.companyName}");
+                return true;
+            }
+
+            log.LogInformation($"Failed to add inventory {inventory.name} in {inventory.companyName}");
+            return false;
+        }
+
         public async Task<IEnumerable<Inventory>> GetInventoriesAsync(string companyName, CosmosClient client, ILogger log)
         {
             Container container = client.GetDatabase("IMS").GetContainer("Inventories");
@@ -40,21 +56,6 @@ namespace InventoryFunction
             return inventories;
         }
 
-        public async Task<bool> AddInventoryAsync(Inventory inventory, CosmosClient client, ILogger log)
-        {
-            Container container = client.GetDatabase("IMS").GetContainer("Inventories");
-            log.LogInformation($"Add inventory {inventory.name} in {inventory.companyName}");
-            var result = await container.CreateItemAsync(inventory);
-
-            if (result.StatusCode == System.Net.HttpStatusCode.Created)
-            {
-                log.LogInformation($"Added inventory {inventory.name} in {inventory.companyName}");
-                return true;
-            }
-
-            log.LogInformation($"Failed to add inventory {inventory.name} in {inventory.companyName}");
-            return false;
-        }
 
         // Exmaples -->
 

@@ -31,7 +31,7 @@ namespace InventoryFunction
             ILogger log,
             string companyName)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            log.LogInformation("C# AddInventory function processed a request.");
 
             Inventory newInventory = new()
             {
