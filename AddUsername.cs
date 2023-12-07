@@ -51,6 +51,7 @@ namespace InventoryFunction
             var result = await _inventoryService.AddUserAsync(newUser, client, log);
 
             string responseMessage = $"Added username \"{newUser.name}\" to \"{companyName}\"/\"{inventoryName}\"";
+            log.LogInformation(responseMessage);
 
             if (result) {
                 return new OkObjectResult(responseMessage);

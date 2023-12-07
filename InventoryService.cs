@@ -24,7 +24,6 @@ namespace InventoryFunction
         public async Task<bool> AddInventoryAsync(Inventory inventory, CosmosClient client, ILogger log)
         {
             Container container = client.GetDatabase("IMS").GetContainer("Inventories");
-            log.LogInformation($"Add inventory {inventory.name} in {inventory.companyName}");
             var result = await container.CreateItemAsync(inventory);
 
             if (result.StatusCode == System.Net.HttpStatusCode.Created)
@@ -40,7 +39,6 @@ namespace InventoryFunction
         public async Task<IEnumerable<Inventory>> GetInventoriesAsync(string companyName, CosmosClient client, ILogger log)
         {
             Container container = client.GetDatabase("IMS").GetContainer("Inventories");
-            log.LogInformation($"Searching for Pending Jokes");
             QueryDefinition queryDefinition = new QueryDefinition(
                 $"SELECT * FROM Inventories i WHERE i.companyName = @companyName")
                 .WithParameter("@companyName", companyName);
@@ -60,7 +58,6 @@ namespace InventoryFunction
         public async Task<bool> AddUserAsync(User user, CosmosClient client, ILogger log)
         {
             Container container = client.GetDatabase("IMS").GetContainer("Usernames");
-            log.LogInformation($"Add user {user.name} in {user.companyName}/{user.inventoryName}");
             var result = await container.CreateItemAsync(user);
 
             if (result.StatusCode == System.Net.HttpStatusCode.Created)
@@ -76,7 +73,7 @@ namespace InventoryFunction
         public async Task<IEnumerable<User>> GetUsersAsync(string companyName, string inventoryName, CosmosClient client, ILogger log)
         {
             Container container = client.GetDatabase("IMS").GetContainer("Usernames");
-            log.LogInformation($"Searching for Usernames");
+            log.LogInformation($"Searching for username in {companyName}/{inventoryName}");
             QueryDefinition queryDefinition = new QueryDefinition(
                 $"SELECT * FROM Usernames i WHERE i.companyName = @companyName AND i.inventoryName = @inventoryName")
                 .WithParameter("@companyName", companyName)
@@ -113,7 +110,7 @@ namespace InventoryFunction
         public async Task<IEnumerable<Item>> GetItemsAsync(string companyName, string inventoryName, CosmosClient client, ILogger log)
         {
             Container container = client.GetDatabase("IMS").GetContainer("Items");
-            log.LogInformation($"Searching for Items");
+            log.LogInformation($"Searching for items in {companyName}/{inventoryName}");
             QueryDefinition queryDefinition = new QueryDefinition(
                 $"SELECT * FROM Items i WHERE i.companyName = @companyName AND i.inventoryName = @inventoryName")
                 .WithParameter("@companyName", companyName)
@@ -136,7 +133,6 @@ namespace InventoryFunction
         public async Task<ActionResult> DeleteItemAsync(string itemId, string companyName, string inventoryName, CosmosClient client, ILogger log)
         {
             Container container = client.GetDatabase("IMS").GetContainer("Items");
-            log.LogInformation($"Delete item {itemId} in {companyName}/{inventoryName}");
             var result = await container.DeleteItemAsync<Item>(itemId, new PartitionKey(companyName));
 
             if (result.StatusCode == System.Net.HttpStatusCode.NoContent)

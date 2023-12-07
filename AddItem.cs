@@ -43,6 +43,7 @@ namespace InventoryFunction
             var result = await _inventoryService.AddItemAsync(newItem, client, log);
 
             string responseMessage = $"Added item \"{newItem.name}\" to \"{companyName}\"/\"{inventoryName}\"";
+            log.LogInformation(responseMessage);
 
             if (result) {
                 return new OkObjectResult(responseMessage);
