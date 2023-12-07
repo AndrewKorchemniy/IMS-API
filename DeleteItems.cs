@@ -11,19 +11,19 @@ using Microsoft.Azure.Cosmos;
 
 namespace InventoryFunction
 {
-    public class GetItems
+    public class DeleteItem
     {
         private readonly InventoryService _inventoryService;
 
-        public GetItems(InventoryService inventoryService)
+        public DeleteItem(InventoryService inventoryService)
         {
             _inventoryService = inventoryService;
         }
 
 
-        [FunctionName("GetItems")]
+        [FunctionName("DeleteItem")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "inventories/{companyName}/{inventoryName}/items")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "inventories/{companyName}/{inventoryName}/items")] HttpRequest req,
             [CosmosDB(
                 databaseName: "IMS",
                 containerName: "IMS",
@@ -32,17 +32,11 @@ namespace InventoryFunction
             string companyName,
             string inventoryName)
         {
-            string username = req.Query["username"];
-            if (username == string.Empty)
-            {
-                return new BadRequestObjectResult("Username not found");
-            }
+            string itemId = req.Query["id"];
 
-            log.LogInformation($"{username} queried for items from {companyName}/{inventoryName}");
+            var result = await _inventoryService.DeleteItemAsync(itemId, companyName, inventoryName, client, log);
 
-            var items = await _inventoryService.GetItemsAsync(companyName, inventoryName, client, log);
-
-            return new OkObjectResult(items);
+            return result;
         }
     }
 }

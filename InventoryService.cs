@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -128,6 +129,24 @@ namespace InventoryFunction
             }
 
             return items;
+        }
+
+
+
+        public async Task<ActionResult> DeleteItemAsync(string itemId, string companyName, string inventoryName, CosmosClient client, ILogger log)
+        {
+            Container container = client.GetDatabase("IMS").GetContainer("Items");
+            log.LogInformation($"Delete item {itemId} in {companyName}/{inventoryName}");
+            var result = await container.DeleteItemAsync<Item>(itemId, new PartitionKey(companyName));
+
+            if (result.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                log.LogInformation($"Successfully deleted item {itemId} in {companyName}/{inventoryName}");
+                return new OkObjectResult($"Successfully deleted item {itemId} in {companyName}/{inventoryName}");
+            }
+
+            log.LogInformation($"Failed to delete item {itemId} in {companyName}/{inventoryName}");
+            return new BadRequestResult();
         }
 
         // Exmaples -->
