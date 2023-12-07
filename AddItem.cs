@@ -12,18 +12,18 @@ using Microsoft.Azure.Cosmos.Core;
 
 namespace InventoryFunction
 {
-    public class AddUsername
+    public class AddItem
     {
         private readonly InventoryService _inventoryService;
 
-        public AddUsername(InventoryService inventoryService)
+        public AddItem(InventoryService inventoryService)
         {
             _inventoryService = inventoryService;
         }
 
-        [FunctionName("AddUsername")]
+        [FunctionName("AddItem")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "inventories/{companyName}/{inventoryName}/usernames")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "inventories/{companyName}/{inventoryName}/items")] HttpRequest req,
             [CosmosDB(
                 databaseName: "IMS",
                 containerName: "IMS",
@@ -33,29 +33,21 @@ namespace InventoryFunction
             string inventoryName)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
+            Item newItem = JsonConvert.DeserializeObject<Item>(requestBody)!;
 
-            if (data == null || data.name == null)
+            if (newItem == null)
             {
-                return new BadRequestObjectResult("Please provide 'username' in the request body.");
+                return new BadRequestObjectResult("Please provide 'item' in the request body.");
             }
 
-            User newUser = new()
-            {
-                id = data!.name,
-                name = data!.name,
-                companyName = companyName,
-                inventoryName = inventoryName
-            };
+            var result = await _inventoryService.AddItemAsync(newItem, client, log);
 
-            var result = await _inventoryService.AddUserAsync(newUser, client, log);
-
-            string responseMessage = $"Added username \"{newUser.name}\" to \"{companyName}\"/\"{inventoryName}\"";
+            string responseMessage = $"Added item \"{newItem.name}\" to \"{companyName}\"/\"{inventoryName}\"";
 
             if (result) {
                 return new OkObjectResult(responseMessage);
             }
-            return new BadRequestObjectResult("Failed to add new username.");  
+            return new BadRequestObjectResult("Failed to add new item.");  
         }
     }
 }

@@ -58,26 +58,26 @@ namespace InventoryFunction
 
         public async Task<bool> AddUserAsync(User user, CosmosClient client, ILogger log)
         {
-            Container container = client.GetDatabase("IMS").GetContainer("Inventories");
+            Container container = client.GetDatabase("IMS").GetContainer("Usernames");
             log.LogInformation($"Add user {user.name} in {user.companyName}/{user.inventoryName}");
             var result = await container.CreateItemAsync(user);
 
             if (result.StatusCode == System.Net.HttpStatusCode.Created)
             {
-                log.LogInformation($"Added inventory {user.name} in {user.companyName}/{user.inventoryName}");
+                log.LogInformation($"Added username {user.name} in {user.companyName}/{user.inventoryName}");
                 return true;
             }
 
-            log.LogInformation($"Failed to add inventory {user.name} in {user.companyName}/{user.inventoryName}");
+            log.LogInformation($"Failed to add username {user.name} in {user.companyName}/{user.inventoryName}");
             return false;
         }
 
         public async Task<IEnumerable<User>> GetUsersAsync(string companyName, string inventoryName, CosmosClient client, ILogger log)
         {
-            Container container = client.GetDatabase("IMS").GetContainer("Inventories");
+            Container container = client.GetDatabase("IMS").GetContainer("Usernames");
             log.LogInformation($"Searching for Usernames");
             QueryDefinition queryDefinition = new QueryDefinition(
-                $"SELECT * FROM Inventories i WHERE i.companyName = @companyName AND i.inventoryName = @inventoryName")
+                $"SELECT * FROM Usernames i WHERE i.companyName = @companyName AND i.inventoryName = @inventoryName")
                 .WithParameter("@companyName", companyName)
                 .WithParameter("@inventoryName", inventoryName);
 
@@ -91,6 +91,43 @@ namespace InventoryFunction
             }
 
             return users;
+        }
+
+        public async Task<bool> AddItemAsync(Item item, CosmosClient client, ILogger log)
+        {
+            Container container = client.GetDatabase("IMS").GetContainer("Items");
+            log.LogInformation($"Add item {item.name} in {item.companyName}/{item.inventoryName}");
+            var result = await container.CreateItemAsync(item);
+
+            if (result.StatusCode == System.Net.HttpStatusCode.Created)
+            {
+                log.LogInformation($"Added item {item.name} in {item.companyName}/{item.inventoryName}");
+                return true;
+            }
+
+            log.LogInformation($"Failed to add item {item.name} in {item.companyName}/{item.inventoryName}");
+            return false;
+        }
+
+        public async Task<IEnumerable<Item>> GetItemsAsync(string companyName, string inventoryName, CosmosClient client, ILogger log)
+        {
+            Container container = client.GetDatabase("IMS").GetContainer("Items");
+            log.LogInformation($"Searching for Items");
+            QueryDefinition queryDefinition = new QueryDefinition(
+                $"SELECT * FROM Items i WHERE i.companyName = @companyName AND i.inventoryName = @inventoryName")
+                .WithParameter("@companyName", companyName)
+                .WithParameter("@inventoryName", inventoryName);
+
+            List<Item> items = new();
+            using (FeedIterator<Item> resultSet = container.GetItemQueryIterator<Item>(queryDefinition))
+            {
+                while (resultSet.HasMoreResults)
+                {
+                    items.AddRange(await resultSet.ReadNextAsync());
+                }
+            }
+
+            return items;
         }
 
         // Exmaples -->

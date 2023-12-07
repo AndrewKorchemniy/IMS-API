@@ -11,19 +11,19 @@ using Microsoft.Azure.Cosmos;
 
 namespace InventoryFunction
 {
-    public class GetUsername
+    public class GetItems
     {
         private readonly InventoryService _inventoryService;
 
-        public GetUsername(InventoryService inventoryService)
+        public GetItems(InventoryService inventoryService)
         {
             _inventoryService = inventoryService;
         }
 
 
-        [FunctionName("GetUsernames")]
+        [FunctionName("GetItems")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "inventories/{companyName}/{inventoryName}/usernames")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "inventories/{companyName}/{inventoryName}/items")] HttpRequest req,
             [CosmosDB(
                 databaseName: "IMS",
                 containerName: "IMS",
@@ -32,9 +32,13 @@ namespace InventoryFunction
             string companyName,
             string inventoryName)
         {
-            var inventories = await _inventoryService.GetUsersAsync(companyName, inventoryName, client, log);
+            var items = await _inventoryService.GetItemsAsync(companyName, inventoryName, client, log);
 
-            return new OkObjectResult(inventories);
+            string username = req.Query["username"];
+
+            log.LogInformation($"{username} queried for items from {companyName}/{inventoryName}");
+
+            return new OkObjectResult(items);
         }
     }
 }
