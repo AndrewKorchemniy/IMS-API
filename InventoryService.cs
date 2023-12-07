@@ -56,6 +56,42 @@ namespace InventoryFunction
             return inventories;
         }
 
+        public async Task<bool> AddUserAsync(User user, CosmosClient client, ILogger log)
+        {
+            Container container = client.GetDatabase("IMS").GetContainer("Inventories");
+            log.LogInformation($"Add user {user.name} in {user.companyName}/{user.inventoryName}");
+            var result = await container.CreateItemAsync(user);
+
+            if (result.StatusCode == System.Net.HttpStatusCode.Created)
+            {
+                log.LogInformation($"Added inventory {user.name} in {user.companyName}/{user.inventoryName}");
+                return true;
+            }
+
+            log.LogInformation($"Failed to add inventory {user.name} in {user.companyName}/{user.inventoryName}");
+            return false;
+        }
+
+        public async Task<IEnumerable<User>> GetUsersAsync(string companyName, string inventoryName, CosmosClient client, ILogger log)
+        {
+            Container container = client.GetDatabase("IMS").GetContainer("Inventories");
+            log.LogInformation($"Searching for Usernames");
+            QueryDefinition queryDefinition = new QueryDefinition(
+                $"SELECT * FROM Inventories i WHERE i.companyName = @companyName AND i.inventoryName = @inventoryName")
+                .WithParameter("@companyName", companyName)
+                .WithParameter("@inventoryName", inventoryName);
+
+            List<User> users = new();
+            using (FeedIterator<User> resultSet = container.GetItemQueryIterator<User>(queryDefinition))
+            {
+                while (resultSet.HasMoreResults)
+                {
+                    users.AddRange(await resultSet.ReadNextAsync());
+                }
+            }
+
+            return users;
+        }
 
         // Exmaples -->
 

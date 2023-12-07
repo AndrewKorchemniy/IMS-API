@@ -12,43 +12,45 @@ using Microsoft.Azure.Cosmos.Core;
 
 namespace InventoryFunction
 {
-    public class AddInventory
+    public class AddUsername
     {
         private readonly InventoryService _inventoryService;
 
-        public AddInventory(InventoryService inventoryService)
+        public AddUsername(InventoryService inventoryService)
         {
             _inventoryService = inventoryService;
         }
 
-        [FunctionName("AddInventory")]
+        [FunctionName("AddUsername")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "inventories/{companyName}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "inventories/{companyName}/{inventoryName}")] HttpRequest req,
             [CosmosDB(
                 databaseName: "IMS",
                 containerName: "IMS",
                     Connection = "CosmosDBConnection")] CosmosClient client,
             ILogger log,
-            string companyName)
+            string companyName,
+            string inventoryName)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
 
-            if (data == null || data.inventoryName == null)
+            if (data == null || data.name == null)
             {
                 return new BadRequestObjectResult("Please provide 'inventoryName' in the request body.");
             }
 
-            Inventory newInventory = new()
+            User newUser = new()
             {
-                id = data!.inventoryName,
-                name = data!.inventoryName,
-                companyName = companyName
+                id = data!.name,
+                name = data!.name,
+                companyName = companyName,
+                inventoryName = inventoryName
             };
 
-            var result = await _inventoryService.AddInventoryAsync(newInventory, client, log);
+            var result = await _inventoryService.AddUserAsync(newUser, client, log);
 
-            string responseMessage = $"Added inventory \"{newInventory.name}\" to company \"{companyName}\" ";
+            string responseMessage = $"Added inventory \"{newUser.name}\" to \"{companyName}\"/\"{inventoryName}\"";
 
             if (result) {
                 return new OkObjectResult(responseMessage);
