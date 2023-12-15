@@ -1,3 +1,3 @@
 ﻿using System;
 
-Console.WriteLine("Test");
+Console.WriteLine("It works!");
